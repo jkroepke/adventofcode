@@ -1,28 +1,17 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-
 /*
-Opcode 1
-    * adds together numbers read from two positions and stores the result in a third position.
-    * The three integers immediately after the opcode tell you these three positions -
-    * the first two indicate the positions from which you should read the input values,
-    * and the third indicates the position at which the output should be stored.
+https://adventofcode.com/2019/day/3
+*/
 
-Opcode 2
-    * works exactly like opcode 1,
-    * except it multiplies the two inputs instead of adding them.
-    * Again, the three integers after the opcode indicate where the inputs and outputs are, not their values.
-
-Once you're done processing an opcode, move to the next one by stepping forward 4 positions.
- */
-
+const fs = require('fs');
 const cables = fs.readFileSync('input.txt', 'utf8')
     .split('\n')
     .filter(Boolean)
     .map((line) => line.split(','));
 
-const drawer = (cable) => {
+const cablePositions = [];
+for (const cable of cables) {
     const positions = [];
     positions.unshift([0, 0]);
 
@@ -30,30 +19,36 @@ const drawer = (cable) => {
         const direction = step.charAt(0);
         const length = parseInt(step.replace(direction, ''));
         const lastPosition = positions[0];
-        let newPosition;
 
         switch (direction) {
             case 'U':
-                newPosition = [lastPosition[0], lastPosition[1] + length];
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0], lastPosition[1] + i + 1]);
+                });
+
                 break;
             case 'D':
-                newPosition = [lastPosition[0], lastPosition[1] - length];
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0], lastPosition[1] - (i + 1)]);
+                });
                 break;
             case 'L':
-                newPosition = [lastPosition[0] - length, lastPosition[1]];
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0] - (i + 1), lastPosition[1]]);
+                });
                 break;
             case 'R':
-                newPosition = [lastPosition[0] + length, lastPosition[1]];
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0] + i + 1, lastPosition[1]]);
+                });
                 break;
 
         }
-        positions.unshift(newPosition);
     }
 
-    return positions;
-};
+    cablePositions.push(positions);
+}
 
-const cablePositions = cables.map((cable) => drawer(cable));
 const cableIntersections = [];
 
 for (const position0 of cablePositions[0]) {
@@ -64,4 +59,6 @@ for (const position0 of cablePositions[0]) {
     }
 }
 
-console.log(cableIntersections);
+const getClosedIntersection = Math.min(...cableIntersections.map((element) => element[0] + element[1]).filter(Boolean));
+
+console.log(cableIntersections.filter((element) => element[0] + element[1] === getClosedIntersection));
