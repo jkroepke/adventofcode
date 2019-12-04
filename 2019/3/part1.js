@@ -25,7 +25,6 @@ for (const cable of cables) {
                 [...Array(length).keys()].forEach((i) => {
                     positions.unshift([lastPosition[0], lastPosition[1] + i + 1]);
                 });
-
                 break;
             case 'D':
                 [...Array(length).keys()].forEach((i) => {

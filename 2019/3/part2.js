@@ -1,52 +1,81 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
+/*
+https://adventofcode.com/2019/day/3
+*/
 
 /*
-Opcode 1
-    * adds together numbers read from two positions and stores the result in a third position.
-    * The three integers immediately after the opcode tell you these three positions -
-    * the first two indicate the positions from which you should read the input values,
-    * and the third indicates the position at which the output should be stored.
-
-Opcode 2
-    * works exactly like opcode 1,
-    * except it multiplies the two inputs instead of adding them.
-    * Again, the three integers after the opcode indicate where the inputs and outputs are, not their values.
-
-Once you're done processing an opcode, move to the next one by stepping forward 4 positions.
+NOT WORKING SKIP, IT!
+F*CK OFF
  */
 
-const opcode = {
-    1: (intCode, position) => {
-        intCode[intCode[position + 3]] = intCode[intCode[position + 1]] + intCode[intCode[position + 2]];
-    },
-    2: (intCode, position) => {
-        intCode[intCode[position + 3]] = intCode[intCode[position + 1]] * intCode[intCode[position + 2]];
-    },
-};
+const fs = require('fs');
+const cables = fs.readFileSync('input.txt', 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.split(','));
 
-const computer = (noun, verb) => {
-    let intCode = fs.readFileSync('input.txt', 'utf8').split(',').filter(Boolean).map(Number);
-    let position = 0;
+const cablesPositions = [];
+for (const cable of cables) {
+    const positions = [];
+    positions.unshift([0, 0]);
 
-    intCode[1] = noun;
-    intCode[2] = verb;
+    for (const step of cable) {
+        const direction = step.charAt(0);
+        const length = parseInt(step.replace(direction, ''));
+        const lastPosition = positions[0];
 
-    while (intCode[position] != 99) {
-        opcode[intCode[position]](intCode, position);
-        position += 4;
+        switch (direction) {
+            case 'U':
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0], lastPosition[1] + i + 1]);
+                });
+                break;
+            case 'D':
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0], lastPosition[1] - (i + 1)]);
+                });
+                break;
+            case 'L':
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0] - (i + 1), lastPosition[1]]);
+                });
+                break;
+            case 'R':
+                [...Array(length).keys()].forEach((i) => {
+                    positions.unshift([lastPosition[0] + i + 1, lastPosition[1]]);
+                });
+                break;
+
+        }
     }
 
-    return intCode;
-};
+    cablesPositions.push(positions);
+}
 
-[...Array(99).keys()].forEach((noun) => {
-    [...Array(99).keys()].forEach((verb) => {
-        const memory = computer(noun, verb);
-        if(memory[0] === 19690720) {
-            console.log(noun, verb);
-            console.log(100 * noun + verb);
+const cableIntersections = [];
+
+for (const position0 of cablesPositions[0]) {
+    for (const position1 of cablesPositions[1]) {
+        if(position0[0] === position1[0] && position0[1] === position1[1]) {
+            cableIntersections.push(position0);
         }
-    });
-});
+    }
+}
+
+let lowestStepCount = Infinity;
+
+for (const cableIntersection of cableIntersections) {
+    const cableStepCount = [];
+
+    cableStepCount.push(cablesPositions[0].map((element) => JSON.stringify(element)).indexOf(JSON.stringify(cableIntersection)));
+    cableStepCount.push(cablesPositions[1].map((element) => JSON.stringify(element)).indexOf(JSON.stringify(cableIntersection)));
+
+    const combinedStepCount = cableStepCount.reduce((total, num) => total + num);
+
+    if (combinedStepCount < lowestStepCount) {
+        lowestStepCount = combinedStepCount;
+    }
+}
+
+console.log(lowestStepCount);
