@@ -1,0 +1,7 @@
+[*.js]
+insert_final_newline = true
+indent_size = 2
+indent_style = space
+
+[input.txt]
+insert_final_newline = false
