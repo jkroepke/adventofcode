@@ -8,23 +8,25 @@ const fs = require('fs');
 
 class IntCodeComputer {
 
-  constructor(intCode) {
+  constructor(intCode, name = 'unknown') {
+    this.name = name;
     this.currentIntCode = '00000';
-    this.intCode = intCode;
     this.position = 0;
     this.input = [];
-    this.output = '';
+    this.output = [];
+
+    // remove reference
+    this.intCode = [...intCode];
   }
 
   setInput(input) {
     this.input = input;
   }
 
-  run() {
+  async run() {
     let opcode;
 
     do {
-
       this.currentIntCode = '00000'.substring(0, 5 - this.intCode[this.position].toString().length) + this.intCode[this.position];
       opcode = Number(this.currentIntCode.slice(-2));
 
@@ -34,7 +36,7 @@ class IntCodeComputer {
         process.exit(1);
       }
 
-      this['opcode' + opcode]();
+      await this['opcode' + opcode]();
     } while (this.position !== -1);
   }
 
@@ -51,6 +53,14 @@ class IntCodeComputer {
     this.intCode[this.intCode[position]] = Number(data);
   }
 
+  async getInput() {
+    while (this.input.length === 0) {
+      await null;
+    }
+
+    return this.input.shift();
+  }
+
   getOutput() {
     return this.output;
   }
@@ -58,7 +68,7 @@ class IntCodeComputer {
   /*
     Opcode 1 adds together numbers read from two positions and stores the result in a third position.
    */
-  opcode1() {
+  async opcode1() {
     this.writeData(this.getParameter(1) + this.getParameter(2), this.position + 3);
     this.position += 4;
   }
@@ -67,7 +77,7 @@ class IntCodeComputer {
     Opcode 2 works exactly like opcode 1,
     except it multiplies the two inputs instead of adding them.
    */
-  opcode2() {
+  async opcode2() {
     this.writeData(this.getParameter(1) * this.getParameter(2), this.position + 3);
     this.position += 4;
   }
@@ -75,22 +85,17 @@ class IntCodeComputer {
   /*
     Opcode 3 takes a single integer as input and saves it to the position given by its only parameter.
    */
-  opcode3() {
-    const currentInput = this.input.shift();
-
-    this.writeData(currentInput, this.position + 1);
-
-    this.inputCounter += 1;
+  async opcode3() {
+    const input = await this.getInput();
+    this.writeData(input, this.position + 1);
     this.position += 2;
   }
 
   /*
     Opcode 4 outputs the value of its only parameter.
    */
-  opcode4() {
-    const value = this.getParameter(1);
-    this.input.push(value);
-    this.output = value;
+  async opcode4() {
+    this.output.push(this.getParameter(1));
     this.position += 2;
   }
 
@@ -100,7 +105,7 @@ class IntCodeComputer {
     it sets the instruction pointer to the value from the second parameter.
     Otherwise, it does nothing.
   */
-  opcode5() {
+  async opcode5() {
     if (this.getParameter(1) !== 0) {
       this.position = this.getParameter(2);
     }
@@ -115,7 +120,7 @@ class IntCodeComputer {
     it sets the instruction pointer to the value from the second parameter.
     Otherwise, it does nothing.
   */
-  opcode6() {
+  async opcode6() {
     if (this.getParameter(1) === 0) {
       this.position = this.getParameter(2);
     }
@@ -130,7 +135,7 @@ class IntCodeComputer {
     it stores 1 in the position given by the third parameter.
     Otherwise, it stores 0.
    */
-  opcode7() {
+  async opcode7() {
     this.writeData(
       Number(this.getParameter(1) < this.getParameter(2)),
       this.position + 3);
@@ -144,7 +149,7 @@ class IntCodeComputer {
     it stores 1 in the position given by the third parameter.
     Otherwise, it stores 0.
    */
-  opcode8() {
+  async opcode8() {
     this.writeData(
       Number(this.getParameter(1) === this.getParameter(2)),
       this.position + 3);
@@ -152,7 +157,7 @@ class IntCodeComputer {
     this.position += 4;
   }
 
-  opcode99() {
+  async opcode99() {
     this.position = -1;
   }
 }
@@ -177,28 +182,52 @@ function getAllPermutations(string) {
   return results;
 }
 
-const intCode = fs.readFileSync('input.txt', 'utf8')
-  .trim()
-  .split(',')
-  .map(Number);
 
-const amplifierOrders = getAllPermutations('56789');
-const results = [];
+(async () => {
+  const intCode = fs.readFileSync('input.txt', 'utf8')
+    .trim()
+    .split(',')
+    .map(Number);
 
-console.error("NON WORKING");
-process.exit(0);
+  const amplifierOrders = getAllPermutations('56789');
+  const results = [];
 
-for (const amplifierOrder of amplifierOrders) {
-  let amplifierOutput = 0;
+  for (const amplifierOrder of amplifierOrders) {
+    const amplifierA = new IntCodeComputer(intCode, 'amplifierA');
+    const amplifierB = new IntCodeComputer(intCode, 'amplifierB');
+    const amplifierC = new IntCodeComputer(intCode, 'amplifierC');
+    const amplifierD = new IntCodeComputer(intCode, 'amplifierD');
+    const amplifierE = new IntCodeComputer(intCode, 'amplifierE');
 
-  for (const amplifier of amplifierOrder) {
-    const computer = new IntCodeComputer(intCode);
-    computer.setInput([amplifier, amplifierOutput]);
-    computer.run();
-    amplifierOutput = computer.getOutput();
+    amplifierA.input = amplifierE.output;
+    amplifierB.input = amplifierA.output;
+    amplifierC.input = amplifierB.output;
+    amplifierD.input = amplifierC.output;
+    amplifierE.input = amplifierD.output;
+
+    amplifierA.input.push(amplifierOrder.charAt(0));
+    amplifierB.input.push(amplifierOrder.charAt(1));
+    amplifierC.input.push(amplifierOrder.charAt(2));
+    amplifierD.input.push(amplifierOrder.charAt(3));
+    amplifierE.input.push(amplifierOrder.charAt(4));
+
+    amplifierA.input.push(0);
+
+    await Promise.all([
+      amplifierA.run(),
+      amplifierB.run(),
+      amplifierC.run(),
+      amplifierD.run(),
+      amplifierE.run(),
+    ]);
+
+    for(const amplifier of [amplifierA, amplifierB, amplifierC, amplifierD, amplifierE]) {
+      if(amplifier.output.length !== 0) {
+        results.push(amplifier.output.shift());
+        break;
+      }
+    }
   }
 
-  results.push(amplifierOutput);
-}
-
-console.log(Math.max(...results));
+  console.log(Math.max(...results));
+})();
