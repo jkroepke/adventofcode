@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
-https://adventofcode.com/2019/day/5
+https://adventofcode.com/2019/day/7
 */
 
 const fs = require('fs');
