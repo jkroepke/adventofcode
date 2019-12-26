@@ -276,8 +276,6 @@ class IntCodeComputer {
 
     const minXBeam = Math.min(...allXBeamCoords);
 
-    process.stdout.write('\u001B[2J\u001B[0;0f', 'utf-8');
-
     if (
       screen[maxY-99]
       && screen[maxY][minXBeam] === '#'
