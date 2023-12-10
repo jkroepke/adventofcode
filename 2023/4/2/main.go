@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"slices"
@@ -13,6 +12,7 @@ type Card struct {
 	winningNumbers []int
 	givenNumbers   []int
 	rightNumbers   []int
+	copies         int
 }
 
 func main() {
@@ -25,11 +25,11 @@ func day4() any {
 		panic(err)
 	}
 
-	var cards []Card
 	var result int
 
 	matches := regexp.MustCompile(`Card\s+(\d+): ([\d ]+) \| ([\d ]+)`).FindAllStringSubmatch(string(bytes), -1)
-	for _, card := range matches {
+	cards := make([]Card, len(matches))
+	for i, card := range matches {
 		var winningNumbers []int
 		var givenNumbers []int
 		var rightNumbers []int
@@ -48,16 +48,18 @@ func day4() any {
 			}
 		}
 
-		cards = append(cards, Card{
-			number:         StringToInt(card[1]),
-			winningNumbers: winningNumbers,
-			givenNumbers:   givenNumbers,
-			rightNumbers:   rightNumbers,
-		})
+		cards[i].number = StringToInt(card[1])
+		cards[i].winningNumbers = winningNumbers
+		cards[i].givenNumbers = givenNumbers
+		cards[i].rightNumbers = rightNumbers
 
 		if len(rightNumbers) >= 1 {
-			result += int(math.Pow(float64(2), float64(len(rightNumbers)-1)))
+			for j := 1; j <= len(rightNumbers); j++ {
+				cards[i+j].copies += 1 + cards[i].copies
+			}
 		}
+
+		result += 1 + cards[i].copies
 	}
 
 	return result
