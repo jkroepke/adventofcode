@@ -26,11 +26,11 @@ func day6() any {
 	var races []Race
 
 	lines := strings.Split(string(bytes), "\n")
-	matches := regexp.MustCompile(`(\d+)`).FindAllString(strings.ReplaceAll(lines[0], " ", ""), -1)
+	matches := regexp.MustCompile(`(\d+)`).FindAllString(lines[0], -1)
 	for _, match := range matches {
 		races = append(races, Race{time: StringToInt(match)})
 	}
-	matches = regexp.MustCompile(`(\d+)`).FindAllString(strings.ReplaceAll(lines[1], " ", ""), -1)
+	matches = regexp.MustCompile(`(\d+)`).FindAllString(lines[1], -1)
 	for i, match := range matches {
 		races[i].distance = StringToInt(match)
 	}
@@ -45,6 +45,7 @@ func day6() any {
 				races[i].buttonTimes = append(races[i].buttonTimes, buttonTime)
 			}
 		}
+		fmt.Println(races[i].buttonTimes)
 		result *= len(races[i].buttonTimes)
 	}
 
