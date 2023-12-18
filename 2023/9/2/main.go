@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -28,10 +27,7 @@ func day9() any {
 		sequences[i][0] = make([]int, len(numbers))
 
 		for j, num := range numbers {
-			sequences[i][0][j], err = strconv.Atoi(num)
-			if err != nil {
-				panic(err)
-			}
+			sequences[i][0][j] = StringToInt(num)
 		}
 	}
 
@@ -65,12 +61,12 @@ func day9() any {
 	for i, sequence := range sequences {
 		var calc int
 		for j := len(sequence) - 2; j >= 0; j-- {
-			a := sequences[i][j][len(sequences[i][j])-1]
-			b := sequences[i][j+1][len(sequences[i][j+1])-1]
-			calc = a + b
-			sequences[i][j] = append(sequences[i][j], calc)
+			a := sequences[i][j][0]
+			b := sequences[i][j+1][0]
+			calc = a - b
+			sequences[i][j] = append([]int{calc}, sequences[i][j]...)
 		}
-		result += sequences[i][0][len(sequences[i][0])-1]
+		result += calc
 	}
 
 	return result
