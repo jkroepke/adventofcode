@@ -9,11 +9,6 @@ import (
 	"strconv"
 )
 
-type numberPair struct {
-	left  int64
-	right int64
-}
-
 func main() {
 	file, err := os.Open("input.txt")
 	if err != nil {
