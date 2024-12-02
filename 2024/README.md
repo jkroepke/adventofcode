@@ -7,7 +7,7 @@ My solutions from https://adventofcode.com/2024/
 | Day | Part 1 | Part 2 |
 |-----|--------|--------|
 | 1   | ✅      | ✅️     |
-| 2   | -      | -      |
+| 2   | ✅      | ✅      |
 | 3   | -      | -      |
 | 4   | -      | -      |
 | 5   | -      | -      |
