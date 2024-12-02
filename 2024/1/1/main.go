@@ -7,7 +7,7 @@ import (
 	"log"
 	"math"
 	"os"
-	"sort"
+	"slices"
 	"strconv"
 )
 
@@ -59,12 +59,8 @@ func run(input io.Reader, debug bool) string {
 		log.Fatal(err)
 	}
 
-	sort.Slice(leftNumbers, func(i, j int) bool {
-		return leftNumbers[i] < leftNumbers[j]
-	})
-	sort.Slice(rightNumbers, func(i, j int) bool {
-		return rightNumbers[i] < rightNumbers[j]
-	})
+	slices.Sort(leftNumbers)
+	slices.Sort(rightNumbers)
 
 	smallestNumber := make([]numberPair, len(leftNumbers))
 
@@ -82,20 +78,4 @@ func run(input io.Reader, debug bool) string {
 	}
 
 	return strconv.FormatInt(distance, 10)
-}
-
-func findSmallestNumber(numbers []int64) int64 {
-	smallestNumber := numbers[0]
-	var smallestNumberIndex int
-
-	for i, number := range numbers {
-		if number < smallestNumber {
-			smallestNumber = number
-			smallestNumberIndex = i
-		}
-	}
-
-	numbers[smallestNumberIndex] = math.MaxInt64
-
-	return smallestNumber
 }
