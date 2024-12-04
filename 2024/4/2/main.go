@@ -33,25 +33,18 @@ func run(input io.Reader, debug bool) string {
 	}
 
 	xySystem := NewXYSystem(string(data))
-	xValueMatch := make([]XY, 0)
+	aValueMatch := make([]XY, 0)
 
 	for xy, value := range xySystem.Iterate() {
-		if value == "X" {
-			xValueMatch = append(xValueMatch, xy)
+		if value == "A" {
+			aValueMatch = append(aValueMatch, xy)
 		}
 	}
 
 	var result int
 
-	for _, xy := range xValueMatch {
-		result += xySystem.SearchTop(xy, "XMAS")
-		result += xySystem.SearchDown(xy, "XMAS")
-		result += xySystem.SearchLeft(xy, "XMAS")
-		result += xySystem.SearchRight(xy, "XMAS")
-		result += xySystem.SearchDLTop(xy, "XMAS")
-		result += xySystem.SearchDLDown(xy, "XMAS")
-		result += xySystem.SearchDRTop(xy, "XMAS")
-		result += xySystem.SearchDRDown(xy, "XMAS")
+	for _, xy := range aValueMatch {
+		result += xySystem.isXMasShape(xy)
 	}
 
 	return strconv.FormatInt(int64(result), 10)
@@ -101,9 +94,10 @@ func (s XYSystem) Iterate() iter.Seq2[XY, string] {
 
 func (s XYSystem) SearchTop(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x, xy.y-i-1) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x, xy.y-i-1) != searchChars[i] {
 			return 0
 		}
 	}
@@ -113,9 +107,10 @@ func (s XYSystem) SearchTop(xy XY, search string) int {
 
 func (s XYSystem) SearchDown(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x, xy.y+i+1) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x, xy.y+i+1) != searchChars[i] {
 			return 0
 		}
 	}
@@ -125,9 +120,10 @@ func (s XYSystem) SearchDown(xy XY, search string) int {
 
 func (s XYSystem) SearchLeft(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x-i-1, xy.y) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x-i-1, xy.y) != searchChars[i] {
 			return 0
 		}
 	}
@@ -137,8 +133,9 @@ func (s XYSystem) SearchLeft(xy XY, search string) int {
 
 func (s XYSystem) SearchRight(xy XY, search string) int {
 	search = search[1:]
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x+i+1, xy.y) != string(search[i]) {
+	searchChars := strings.Split(search, "")
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x+i+1, xy.y) != searchChars[i] {
 			return 0
 		}
 	}
@@ -148,9 +145,10 @@ func (s XYSystem) SearchRight(xy XY, search string) int {
 
 func (s XYSystem) SearchDLTop(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x+i+1, xy.y) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x-i-1, xy.y-i-1) != searchChars[i] {
 			return 0
 		}
 	}
@@ -160,9 +158,10 @@ func (s XYSystem) SearchDLTop(xy XY, search string) int {
 
 func (s XYSystem) SearchDLDown(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x-i-1, xy.y+i+1) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x-i-1, xy.y+i+1) != searchChars[i] {
 			return 0
 		}
 	}
@@ -172,9 +171,10 @@ func (s XYSystem) SearchDLDown(xy XY, search string) int {
 
 func (s XYSystem) SearchDRTop(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x+i+1, xy.y-i-1) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x+i+1, xy.y-i-1) != searchChars[i] {
 			return 0
 		}
 	}
@@ -184,12 +184,34 @@ func (s XYSystem) SearchDRTop(xy XY, search string) int {
 
 func (s XYSystem) SearchDRDown(xy XY, search string) int {
 	search = search[1:]
+	searchChars := strings.Split(search, "")
 
-	for i := 0; i < len(search); i++ {
-		if s.Get(xy.x+i+1, xy.y+i+1) != string(search[i]) {
+	for i := 0; i < len(searchChars); i++ {
+		if s.Get(xy.x+i+1, xy.y+i+1) != searchChars[i] {
 			return 0
 		}
 	}
 
 	return 1
+}
+
+func (s XYSystem) isXMasShape(xy XY) int {
+
+	for _, searchChars := range []string{"SSMM", "MSSM", "MMSS", "SMMS"} {
+		var subResult int
+		subResult += s.SearchDLTop(xy, "A"+string(searchChars[0]))
+		subResult += s.SearchDLDown(xy, "A"+string(searchChars[1]))
+		subResult += s.SearchDRTop(xy, "A"+string(searchChars[2]))
+		subResult += s.SearchDRDown(xy, "A"+string(searchChars[3]))
+
+		if subResult == 4 {
+			log.Printf("Match found for %v", xy)
+
+			return 1
+		}
+	}
+
+	log.Printf("No match found for %v", xy)
+
+	return 0
 }
