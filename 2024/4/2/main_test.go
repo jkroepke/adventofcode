@@ -66,9 +66,29 @@ func Test_isXMasShape(t *testing.T) {
 		input io.Reader
 	}{
 		{
-			XY: XY{6, 2},
+			XY: XY{1, 1},
 			input: func() io.Reader {
 				f, err := os.Open("inputs/test1.txt")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return f
+			}(),
+		},
+		{
+			XY: XY{6, 2},
+			input: func() io.Reader {
+				f, err := os.Open("inputs/test2.txt")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return f
+			}(),
+		},
+		{
+			XY: XY{7, 2},
+			input: func() io.Reader {
+				f, err := os.Open("inputs/test2.txt")
 				if err != nil {
 					t.Fatal(err)
 				}

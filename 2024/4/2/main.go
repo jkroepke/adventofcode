@@ -199,19 +199,15 @@ func (s XYSystem) isXMasShape(xy XY) int {
 
 	for _, searchChars := range []string{"SSMM", "MSSM", "MMSS", "SMMS"} {
 		var subResult int
-		subResult += s.SearchDLTop(xy, "A"+string(searchChars[0]))
-		subResult += s.SearchDLDown(xy, "A"+string(searchChars[1]))
-		subResult += s.SearchDRTop(xy, "A"+string(searchChars[2]))
-		subResult += s.SearchDRDown(xy, "A"+string(searchChars[3]))
+		subResult += s.SearchDRTop(xy, "A"+string(searchChars[0]))
+		subResult += s.SearchDRDown(xy, "A"+string(searchChars[1]))
+		subResult += s.SearchDLDown(xy, "A"+string(searchChars[2]))
+		subResult += s.SearchDLTop(xy, "A"+string(searchChars[3]))
 
 		if subResult == 4 {
-			log.Printf("Match found for %v", xy)
-
 			return 1
 		}
 	}
-
-	log.Printf("No match found for %v", xy)
 
 	return 0
 }
