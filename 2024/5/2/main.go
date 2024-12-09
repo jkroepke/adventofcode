@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
+	"math/rand/v2"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type pageOrderRule struct {
@@ -68,14 +71,31 @@ func run(input io.Reader, debug bool) string {
 
 	var result int
 
+	resultsCh := make(chan int, len(pageUpdates))
+
+	wg := sync.WaitGroup{}
+
 	for _, updates := range pageUpdates {
 		if isUpdateRuleCorrect(updates, orderRules) {
 			continue
 		}
 
-		updates = orderRule(updates, orderRules)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-		result = updates[len(updates)/2]
+			updates = orderRule(updates, orderRules)
+			resultsCh <- updates[len(updates)/2]
+
+			fmt.Println(updates)
+		}()
+	}
+	wg.Wait()
+
+	close(resultsCh)
+
+	for res := range resultsCh {
+		result += res
 	}
 
 	return strconv.FormatInt(int64(result), 10)
@@ -101,47 +121,13 @@ func isUpdateRuleCorrect(pageUpdates []int, orderRules []pageOrderRule) bool {
 
 func orderRule(pageUpdates []int, orderRules []pageOrderRule) []int {
 	orderedPageUpdates := pageUpdates
+	for {
+		rand.Shuffle(len(orderedPageUpdates), func(i, j int) {
+			orderedPageUpdates[i], orderedPageUpdates[j] = orderedPageUpdates[j], orderedPageUpdates[i]
+		})
 
-	firstOrderedPage := -1
-updateBefore:
-	for _, update := range pageUpdates {
-		for _, updateBefore := range pageUpdates {
-			if update == updateBefore {
-				continue
-			}
-
-			for _, rule := range orderRules {
-				if updateBefore == rule.page1 && update == rule.page2 {
-					continue updateBefore
-				}
-			}
-
-			firstOrderedPage = update
-		}
-
-		if firstOrderedPage != -1 {
-			break
+		if isUpdateRuleCorrect(orderedPageUpdates, orderRules) {
+			return orderedPageUpdates
 		}
 	}
-
-	for i, update := range orderedPageUpdates {
-		if update == firstOrderedPage {
-			orderedPageUpdates[i], orderedPageUpdates[0] = orderedPageUpdates[0], orderedPageUpdates[i]
-		}
-	}
-
-outer:
-	for i := 0; i < len(orderedPageUpdates)-1; i++ {
-		for j := i + 1; j < len(orderedPageUpdates); j++ {
-			for _, rule := range orderRules {
-				if orderedPageUpdates[i] == rule.page1 && orderedPageUpdates[j] == rule.page2 {
-					orderedPageUpdates[i+1], orderedPageUpdates[j] = orderedPageUpdates[j], orderedPageUpdates[i+1]
-					continue outer
-				}
-			}
-		}
-	}
-	log.Printf("Page updates: %v\n", orderedPageUpdates)
-
-	return orderedPageUpdates
 }
