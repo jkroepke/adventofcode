@@ -37,4 +37,4 @@ My solutions from https://adventofcode.com/2024/
 
 | Done | Done w/ Hints | Surrender, code copied | Unfinished |
 |------|---------------|------------------------|------------|
-| ✅   | ℹ️            | ⚠️                     | -          |
+| ✅    | ℹ️            | ⚠️                     | -          |
