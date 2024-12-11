@@ -1,22 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"math"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
-type stonePair struct {
-	stone1 int
-	stone2 int
-}
-
-var cache = map[int]stonePair{}
+var cache = map[int]map[int]int{}
 
 func main() {
 	file, err := os.Open("input.txt")
@@ -37,7 +30,7 @@ func run(input io.Reader, debug bool) string {
 
 	inputData := strings.Split(strings.TrimSpace(string(data)), " ")
 
-	stones := make([]int, len(inputData))
+	var numberOfStones int
 
 	for _, stoneString := range inputData {
 		stoneNumber, err := strconv.ParseInt(stoneString, 10, 32)
@@ -45,40 +38,40 @@ func run(input io.Reader, debug bool) string {
 			log.Fatal(err)
 		}
 
-		stones = append(stones, int(stoneNumber))
+		numberOfStones += blink(0, int(stoneNumber))
 	}
 
-	for i := range 75 {
-		start := time.Now()
-
-		blink(&stones)
-
-		fmt.Printf("Iteration %d took %v\n", i, time.Since(start))
-	}
-
-	return strconv.FormatInt(int64(len(stones)), 10)
+	return strconv.FormatInt(int64(numberOfStones), 10)
 }
 
-func blink(stones *[]int) {
-	for i, stone := range *stones {
-		if stone == 0 {
-			(*stones)[i] = 1
-		} else if cache, ok := cache[stone]; ok {
-			newStone1, newStone2 := cache.stone1, cache.stone2
-			(*stones)[i] = newStone1
-
-			if newStone2 != -1 {
-				*stones = append(*stones, newStone2)
-			}
-		} else if numDigits := lenLoop(stone); numDigits%2 == 0 {
-			newStone1, newStone2 := splitNumber(stone, numDigits)
-
-			(*stones)[i] = newStone1
-			*stones = append(*stones, newStone2)
-		} else {
-			(*stones)[i] *= 2024
-		}
+func blink(numBlink, stone int) int {
+	if numBlink == 25 {
+		return 1
 	}
+
+	if val, ok := cache[numBlink]; ok {
+		if val, ok := val[stone]; ok {
+			return val
+		}
+	} else {
+		cache[numBlink] = map[int]int{}
+	}
+
+	var sum int
+
+	if stone == 0 {
+		sum = blink(numBlink+1, 1)
+	} else if numDigits := lenLoop(stone); numDigits%2 == 0 {
+		newStone1, newStone2 := splitNumber(stone, numDigits)
+
+		sum = blink(numBlink+1, newStone1) + blink(numBlink+1, newStone2)
+	} else {
+		sum = blink(numBlink+1, stone*2024)
+	}
+
+	cache[numBlink][stone] = sum
+
+	return sum
 }
 
 func lenLoop(i int) int {

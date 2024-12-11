@@ -26,7 +26,7 @@ func TestRun(t *testing.T) {
 				}
 				return f
 			}(),
-			answer: "99",
+			answer: "55312",
 		},
 		{
 			name:  "Puzzle",
