@@ -40,7 +40,7 @@ func TestRun(t *testing.T) {
 				}
 				return f
 			}(),
-			answer: "6201130364722",
+			answer: "198075",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
